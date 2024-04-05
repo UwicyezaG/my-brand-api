@@ -10,7 +10,7 @@ const createUser = {
             properties: {
               username: {
                 type: "string",
-                description: "The user name",
+                description: "The username",
                 example: "icyeza",
               },
               fullname: {

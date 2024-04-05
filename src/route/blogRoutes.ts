@@ -1,14 +1,13 @@
-import express, {Request, Response} from 'express';
-import BlogController from '../controller/blogCtrl';
+import express, { Request, Response } from "express";
+import BlogController from "../controller/blogCtrl";
 
 const router = express.Router();
-const blogController = new BlogController() 
+const blogController = new BlogController();
 
-//crud blogpost
-router.post('/posts', blogController.createBlog);
-router.get('/posts/', blogController.retrieveBlog);
-router.put('/posts/', blogController.updateBlog);
-router.delete('/posts/', blogController.deleteBlog);
+router.post("/posts/create", blogController.createBlog);
+router.get("/posts/allblog", blogController.retrieveBlog);
+router.get("/posts/singleblog/:id", blogController.singleBlog);
+router.put("/posts/updateblog/:id", blogController.updateBlog);
+router.delete("/posts/removeblog/:id", blogController.deleteBlog);
 
-  
 export default router;

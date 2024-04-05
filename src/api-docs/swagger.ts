@@ -4,12 +4,27 @@ const swaggerOptions: swaggerJSDoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Your API Title', // my brand ...api
+      title: 'My Brand Api',
       version: '1.0.0',
-      description: 'Your API Description',
+      description: 'My Brand API Description',
     },
+
+    servers: [{
+      url: 'http://localhost:4000',
+      description: 'Development server',
+    },
+  ],
+  components: {
+    securitySchemes: {
+        bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+        }
+    },
+},
+
   },
-  apis: ['./src/route/*.ts' , './src/api-docs/docs/*.yml'], // Path to the API routes- access swagger
+  apis: ['./src/route/*.ts', './src/controller/*.ts', './src/api-docs/docs/*.yml'],
 };
 
 export const swaggerSpec = swaggerJSDoc(swaggerOptions);

@@ -1,19 +1,4 @@
-// import jwt from "jsonwebtoken";
-// import { IUserPost } from "../models/userAc";
 
-// export const token =( user: IUserPost) =>{
-//     return jwt.sign(
-//         {
-//             _id:user._id,
-//             username:user.username,
-//             email: user.email,
-//         },
-//         process.env.JWT_SECRET || "bakame",
-//         {
-//             expiresIn: "1h"
-//         }
-//     )
-// }
 
 import jwt, {Secret} from "jsonwebtoken";
 import {NextFunction, Request, Response} from "express";

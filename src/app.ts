@@ -7,14 +7,13 @@ import { errorHandler } from "./middlewares/midwerror";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./api-docs/swagger";
 
-
 import blogRoutes from "./route/blogRoutes";
 import userRoutes from "./route/userRoutes";
 import commentRoutes from "./route/commentRoutes";
+import connectRoutes from "./route/connectRoutes";
 
 import router from "./route/blogRoutes";
 import connectDB from "./database/db";
-
 
 dotenv.config();
 
@@ -27,6 +26,7 @@ app.use(express.json());
 app.use("/api/blog", blogRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/comment", commentRoutes);
+app.use("/api/connect", connectRoutes);
 app.use(errorHandler);
 app.use("/api", router);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

@@ -1,17 +1,16 @@
+import { Request, Response } from "express";
 import request from "supertest";
 import mongoose from "mongoose";
 import server from "../src/app";
 import BlogPost from "../src/models/blogPost";
 import UserAc from "../src/models/userAc";
-import Comment from "../src/models/comment";
 import bcrypt from "bcrypt";
 import userAc from "../src/models/userAc";
-import comment from "../src/models/comment";
+import nodemailer from "nodemailer";
+import { sendMail } from "../src/controller/connectCtrl";
 
 const blogId = new mongoose.Types.ObjectId();
 const userId = new mongoose.Types.ObjectId();
-const commentId = new mongoose.Types.ObjectId();
-
 
 describe("blogsController", () => {
   beforeAll(async () => {
@@ -28,7 +27,6 @@ describe("blogsController", () => {
       email: "useremail@gmail.com",
       password: "userpassword",
     });
- 
   });
   afterAll(async () => {
     await BlogPost.deleteMany();
@@ -230,7 +228,7 @@ describe("POST /api/user/register", () => {
     });
   });
 
-  //describe 
+  //describe
   describe("PUT /api/user/updateAc/:id", () => {
     it("should update user account credentials", async () => {
       const updatedData = {
@@ -304,6 +302,68 @@ describe("POST /api/user/register", () => {
 
       expect(res.statusCode).toBe(404);
       expect(res.body).toEqual({ message: "User account not found" });
+    });
+  });
+});
+
+jest.mock("nodemailer", () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue(true),
+  }),
+}));
+
+describe("sendMail controller", () => {
+  let req: Partial<Request>;
+  let res: Partial<Response>;
+  let next: jest.Mock;
+
+  beforeEach(() => {
+    req = {
+      body: {
+        from: "sender@example.com",
+        subject: "Test Subject",
+        message: "Test Message",
+      },
+    };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    next = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should send email successfully", async () => {
+    await sendMail(req as Request, res as Response, next);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Message sent successfully",
+    });
+    expect(nodemailer.createTransport).toHaveBeenCalled();
+    expect(nodemailer.createTransport().sendMail).toHaveBeenCalled();
+  });
+
+  it("should handle missing required fields", async () => {
+    delete req.body.from;
+    await sendMail(req as Request, res as Response, next);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Missing required fields",
+    });
+    expect(nodemailer.createTransport().sendMail).not.toHaveBeenCalled();
+  });
+
+  it("should handle nodemailer error", async () => {
+    (nodemailer.createTransport().sendMail as jest.Mock).mockRejectedValueOnce(
+      new Error("Nodemailer Error")
+    );
+    await sendMail(req as Request, res as Response, next);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "Error occurred while sending email",
     });
   });
 });

@@ -13,6 +13,11 @@ const swaggerOptions: swaggerJSDoc.Options = {
       url: 'http://localhost:4000',
       description: 'Development server',
     },
+    {
+        url: 'https://my-brand-api-arwz.onrender.com',
+        description: 'Production server',
+  
+    }
   ],
   components: {
     securitySchemes: {

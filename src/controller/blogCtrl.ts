@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
 import BlogPost from "../models/blogPost";
 import blogPost from "../models/blogPost";
-import { clear } from "console";
+import uploadFile from "../utils/cloudinary";
+import { UploadApiResponse } from "cloudinary";
 
 class BlogController {
   //createblog
@@ -16,7 +17,7 @@ class BlogController {
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -25,7 +26,7 @@ class BlogController {
  *               category:
  *                 type: string
  *               image:
- *                 type: string
+ *                 type: file
  *               description:
  *                 type: string
  *     responses:
@@ -79,9 +80,11 @@ class BlogController {
 
  */
 
+
   async createBlog(req: Request, res: Response) {
     try {
-      const { title, category, image, description } = req.body;
+      const { title, category, description } = req.body;
+      const image = req.file;
       if (!title || !category || !image || !description) {
         return res.status(400).json({
           message: "Invalid inputs",
@@ -94,7 +97,10 @@ class BlogController {
           message: "The blog with this title already exist",
         });
       }
-      const newPost = new BlogPost({ title, category, image, description });
+
+      const uploadedImage = await uploadFile(image, res) as unknown as UploadApiResponse;
+
+      const newPost = new BlogPost({ title, category, image: uploadedImage.secure_url , description});
       await newPost.save();
       res.status(201).json({
         ok: true,
@@ -105,6 +111,7 @@ class BlogController {
       res.status(500).json({ error: "Error creating blog post" });
     }
   }
+
   //Retrieve
 
   /**
@@ -292,9 +299,13 @@ class BlogController {
    *                   type: string
    *                   example: Error in updating the blog post
    */
+
+
   async updateBlog(req: Request, res: Response) {
     const blogId = req.params.id;
-    const { title, category, image, description } = req.body;
+    const { title, category, description } = req.body;
+    let image = req.body.image;
+
     try {
       const blog = await blogPost.findById(blogId);
       if (!blog) {
@@ -302,6 +313,12 @@ class BlogController {
           message: "blog not found",
         });
       }
+     if(!req.file){
+      return res.status(400).json({
+        message: "no uploaded"
+      })
+     }
+
       if (title) {
         blog.title = title;
       }
@@ -309,16 +326,20 @@ class BlogController {
         blog.category = category;
       }
       if (image) {
-        blog.image = image;
+          const uploadedImage =  await uploadFile(req.file, res) as unknown as UploadApiResponse;
+          blog.image = uploadedImage.secure_url;
       }
       if (description) {
         blog.description = description;
       }
 
       await blog.save();
-      res.status(200).json(blog);
+      res.status(200).json({
+        message: "Blog is successfully updated",
+      });
     } catch (error: any) {
-      res.status(500).json(error.message);
+      res.status(500).json({
+        message: "Error in updating blog"});
     }
   }
 
